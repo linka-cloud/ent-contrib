@@ -133,7 +133,7 @@ func toSchema(m *protogen.Message, opts *entopts.Schema) (*schemast.UpsertSchema
 }
 
 func isEdge(f *protogen.Field) bool {
-	return f.Desc.Kind() == protoreflect.MessageKind
+	return f.Desc.Kind() == protoreflect.MessageKind && f.Desc.Message().FullName() != "google.protobuf.Timestamp"
 }
 
 func toEdge(f *protogen.Field) (ent.Edge, error) {
@@ -198,7 +198,12 @@ func toField(f *protogen.Field) (ent.Field, error) {
 		}
 		fld = field.Enum(name).Values(values...)
 	default:
-		return nil, fmt.Errorf("protoc-gen-ent: unsupported kind %q", f.Desc.Kind())
+		switch f.Desc.Message().FullName() {
+		case "google.protobuf.Timestamp":
+			fld = field.Time(name)
+		default:
+			return nil, fmt.Errorf("protoc-gen-ent: unsupported kind %q", f.Desc.Kind())
+		}
 	}
 	if opts, ok := fieldOpts(f); ok {
 		applyFieldOpts(fld, opts, f.Oneof != nil && f.Oneof.Desc.IsSynthetic())
