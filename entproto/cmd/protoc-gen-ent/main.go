@@ -21,6 +21,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -123,11 +124,14 @@ func toSchema(m *protogen.Message, opts *entopts.Schema) (*schemast.UpsertSchema
 			out.Edges = append(out.Edges, edg)
 			continue
 		}
-		fld, err := toField(f)
+		fld, idx, err := toField(f)
 		if err != nil {
 			return nil, err
 		}
 		out.Fields = append(out.Fields, fld)
+		if idx != nil {
+			out.Indexes = append(out.Indexes, idx)
+		}
 	}
 	return out, nil
 }
@@ -156,7 +160,7 @@ func toEdge(f *protogen.Field) (ent.Edge, error) {
 	return e, nil
 }
 
-func toField(f *protogen.Field) (ent.Field, error) {
+func toField(f *protogen.Field) (ent.Field, ent.Index, error) {
 	name := string(f.Desc.Name())
 	var fld ent.Field
 	switch f.Desc.Kind() {
@@ -202,16 +206,17 @@ func toField(f *protogen.Field) (ent.Field, error) {
 		case "google.protobuf.Timestamp":
 			fld = field.Time(name)
 		default:
-			return nil, fmt.Errorf("protoc-gen-ent: unsupported kind %q", f.Desc.Kind())
+			return nil, nil, fmt.Errorf("protoc-gen-ent: unsupported kind %q", f.Desc.Kind())
 		}
 	}
+	var idx ent.Index
 	if opts, ok := fieldOpts(f); ok {
-		applyFieldOpts(fld, opts, f.Oneof != nil && f.Oneof.Desc.IsSynthetic())
+		idx = applyFieldOpts(fld, opts, f.Oneof != nil && f.Oneof.Desc.IsSynthetic())
 	}
-	return fld, nil
+	return fld, idx, nil
 }
 
-func applyFieldOpts(fld ent.Field, opts *entopts.Field, protoOptional bool) {
+func applyFieldOpts(fld ent.Field, opts *entopts.Field, protoOptional bool) ent.Index {
 	d := fld.Descriptor()
 	d.Nillable = opts.GetNillable() || ((opts == nil || opts.Nillable == nil) && protoOptional)
 	d.Optional = opts.GetOptional() || ((opts == nil || opts.Optional == nil) && protoOptional)
@@ -222,6 +227,13 @@ func applyFieldOpts(fld ent.Field, opts *entopts.Field, protoOptional bool) {
 	d.Tag = opts.GetStructTag()
 	d.StorageKey = opts.GetStorageKey()
 	d.SchemaType = opts.GetSchemaType()
+	if opts.GetIndex() != nil {
+		if opts.GetIndex().GetUnique() {
+			return index.Fields(fld.Descriptor().Name).Unique()
+		}
+		return index.Fields(fld.Descriptor().Name)
+	}
+	return nil
 }
 
 func applyEdgeOpts(edg ent.Edge, opts *entopts.Edge) {
