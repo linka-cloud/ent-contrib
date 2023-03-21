@@ -55,6 +55,18 @@ func TestOptional(t *testing.T) {
 	require.True(t, strings.HasPrefix(contents, "// File updated by protoc-gen-ent."))
 }
 
+func TestExtraFields(t *testing.T) {
+	tt, err := newGenTest(t, "testdata/internal.proto")
+	require.NoError(t, err)
+	contents, err := tt.fileContents("internal.go")
+	require.NoError(t, err)
+	require.Contains(t, contents, "type Internal struct")
+	require.Contains(t, contents, `field.String("internal_string").Optional()`)
+	require.Contains(t, contents, `field.Time("internal_time")`)
+	require.Contains(t, contents, `field.Int64("internal_index")`)
+	require.Contains(t, contents, `index.Fields("internal_index")`)
+}
+
 func TestTimestamp(t *testing.T) {
 	tt, err := newGenTest(t, "testdata/timestamp.proto")
 	require.NoError(t, err)

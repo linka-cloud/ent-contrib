@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package testdata;
+
+import "options/ent/opts.proto";
+
+option go_package = "ent/testdata";
+
+message Internal {
+    option (ent.schema) = {
+      gen: true,
+      internal: [
+        {
+          name: "internal_string"
+          type: STRING,
+          field: {
+            optional: true,
+          }
+        },
+        {
+          name: "internal_time"
+          type: TIME,
+        },
+        {
+          name: "internal_index"
+          type: INT64
+          field: {
+            index: {}
+          }
+        }
+      ]
+    };
+    int64 id = 1;
+}

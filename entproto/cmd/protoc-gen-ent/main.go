@@ -133,6 +133,16 @@ func toSchema(m *protogen.Message, opts *entopts.Schema) (*schemast.UpsertSchema
 			out.Indexes = append(out.Indexes, idx)
 		}
 	}
+	for _, v := range opts.GetInternal() {
+		fld, idx, err := toInternalField(v)
+		if err != nil {
+			return nil, err
+		}
+		out.Fields = append(out.Fields, fld)
+		if idx != nil {
+			out.Indexes = append(out.Indexes, idx)
+		}
+	}
 	return out, nil
 }
 
@@ -214,6 +224,35 @@ func toField(f *protogen.Field) (ent.Field, ent.Index, error) {
 		idx = applyFieldOpts(fld, opts, f.Oneof != nil && f.Oneof.Desc.IsSynthetic())
 	}
 	return fld, idx, nil
+}
+
+func toInternalField(v *entopts.Schema_InternalField) (ent.Field, ent.Index, error) {
+	var fld ent.Field
+	switch v.GetType() {
+	case entopts.Schema_STRING:
+		fld = field.String(v.GetName())
+	case entopts.Schema_INT32:
+		fld = field.Int32(v.GetName())
+	case entopts.Schema_INT64:
+		fld = field.Int64(v.GetName())
+	case entopts.Schema_UINT32:
+		fld = field.Uint32(v.GetName())
+	case entopts.Schema_UINT64:
+		fld = field.Uint64(v.GetName())
+	case entopts.Schema_FLOAT32:
+		fld = field.Float(v.GetName())
+	case entopts.Schema_FLOAT64:
+		fld = field.Float(v.GetName())
+	case entopts.Schema_BOOL:
+		fld = field.Bool(v.GetName())
+	case entopts.Schema_BYTES:
+		fld = field.Bytes(v.GetName())
+	case entopts.Schema_TIME:
+		fld = field.Time(v.GetName())
+	default:
+		return nil, nil, fmt.Errorf("protoc-gen-ent: unsupported kind %q", v.GetType())
+	}
+	return fld, applyFieldOpts(fld, v.Field, false), nil
 }
 
 func applyFieldOpts(fld ent.Field, opts *entopts.Field, protoOptional bool) ent.Index {

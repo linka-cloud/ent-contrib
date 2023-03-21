@@ -7,6 +7,24 @@ option go_package = "entgo.io/contrib/entproto/cmd/protoc-gen-ent/options/ent";
 message Schema {
   optional bool gen = 1;
   optional string name = 2;
+  repeated InternalField internal = 3;
+  enum Type {
+    STRING = 0;
+    INT32 = 1;
+    INT64 = 2;
+    UINT32 = 3;
+    UINT64 = 4;
+    FLOAT32 = 5;
+    FLOAT64 = 6;
+    BOOL = 7;
+    BYTES = 8;
+    TIME = 9;
+  }
+  message InternalField {
+    required string name = 1;
+    required Type type = 2;
+    optional Field field = 3;
+  }
 }
 
 extend google.protobuf.MessageOptions {
