@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package testdata;
+
+import "options/ent/opts.proto";
+
+option go_package = "ent/testdata";
+
+message Defaults {
+  option (ent.schema).gen = true;
+  string string = 1 [(ent.field).default.string = "foo"];
+  int32 int32 = 2 [(ent.field).default.int32 = 42];
+  int64 int64 = 3 [(ent.field).default.int64 = 42];
+  uint32 uint32 = 4 [(ent.field).default.uint32 = 42];
+  uint64 uint64 = 5 [(ent.field).default.uint64 = 42];
+  bool bool = 6 [(ent.field).default.bool = true];
+  float float = 7 [(ent.field).default.float = 42.42];
+  double double = 8 [(ent.field).default.double = 42.42];
+  bytes bytes = 9 [(ent.field).default.bytes = "foo"];
+}

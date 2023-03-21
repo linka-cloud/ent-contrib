@@ -272,6 +272,27 @@ func applyFieldOpts(fld ent.Field, opts *entopts.Field, protoOptional bool) ent.
 		}
 		return index.Fields(fld.Descriptor().Name)
 	}
+	switch v := opts.GetDefault().GetValue().(type) {
+	case *entopts.Field_Default_Bool:
+		d.Default = v.Bool
+	case *entopts.Field_Default_Int32:
+		d.Default = v.Int32
+	case *entopts.Field_Default_Int64:
+		d.Default = v.Int64
+	case *entopts.Field_Default_Uint32:
+		d.Default = v.Uint32
+	case *entopts.Field_Default_Uint64:
+		d.Default = v.Uint64
+	case *entopts.Field_Default_Float:
+		d.Default = v.Float
+	case *entopts.Field_Default_Double:
+		d.Default = v.Double
+	case *entopts.Field_Default_String_:
+		d.Default = v.String_
+	case *entopts.Field_Default_Bytes:
+		d.Default = string(v.Bytes)
+	}
+
 	return nil
 }
 

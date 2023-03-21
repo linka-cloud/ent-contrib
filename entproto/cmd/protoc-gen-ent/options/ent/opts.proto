@@ -42,9 +42,22 @@ message Field {
   optional string storage_key = 8;
   map<string, string> schema_type = 9;
   optional Index index = 10;
-
+  optional Default default = 11;
   message Index {
     optional bool unique = 1;
+  }
+  message Default {
+    oneof value {
+      bool bool = 11;
+      int32 int32 = 12;
+      int64 int64 = 13;
+      uint32 uint32 = 14;
+      uint64 uint64 = 15;
+      float float = 16;
+      double double = 17;
+      string string = 18;
+      bytes bytes = 19;
+    }
   }
 }
 

@@ -67,6 +67,23 @@ func TestExtraFields(t *testing.T) {
 	require.Contains(t, contents, `index.Fields("internal_index")`)
 }
 
+func TestDefault(t *testing.T) {
+	tt, err := newGenTest(t, "testdata/defaults.proto")
+	require.NoError(t, err)
+	contents, err := tt.fileContents("defaults.go")
+	require.NoError(t, err)
+	require.Contains(t, contents, "type Defaults struct")
+	require.Contains(t, contents, `field.String("string").Default("foo")`)
+	require.Contains(t, contents, `field.Int32("int32").Default(42)`)
+	require.Contains(t, contents, `field.Int64("int64").Default(42)`)
+	require.Contains(t, contents, `field.Uint32("uint32").Default(42)`)
+	require.Contains(t, contents, `field.Uint64("uint64").Default(42)`)
+	require.Contains(t, contents, `field.Bool("bool").Default(true)`)
+	require.Contains(t, contents, `field.Float("float").Default(42.42)`)
+	require.Contains(t, contents, `field.Float("double").Default(42.42)`)
+	require.Contains(t, contents, `field.Bytes("bytes").Default("foo")`)
+}
+
 func TestTimestamp(t *testing.T) {
 	tt, err := newGenTest(t, "testdata/timestamp.proto")
 	require.NoError(t, err)
